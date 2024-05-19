@@ -1,0 +1,50 @@
+import pandas as pd
+import re
+
+# Functie om speciale tekens in een kolom te controleren
+def controleer_speciale_tekens(kolom):
+    speciale_tekens = ['/', '\\', '*', ':', '?', '"', '<', '>', '|', '\0']
+    patroon = '|'.join(map(re.escape, speciale_tekens))
+    return kolom.astype(str).str.contains(patroon, na=False)
+
+# Functie om dataset te analyseren
+def analyseer_dataset(pad_naar_bestand, sheet_naam):
+    # Laad de data
+    data = pd.read_excel(pad_naar_bestand, sheet_name=sheet_naam)
+
+    # Analyseer volledigheid
+    volledigheid_rapport = data.isnull().sum()
+    speciale_tekens_rapport = data.apply(controleer_speciale_tekens).sum()
+
+    # Analyseer uniciteit
+    uniciteit_rapport = data.nunique()
+
+    # Combineer volledigheid en speciale tekens in één rapport
+    volledigheid_speciale_rapport = pd.DataFrame({
+        'ontbrekende_waarden': volledigheid_rapport,
+        'speciale_tekens': speciale_tekens_rapport
+    })
+
+    return volledigheid_speciale_rapport, uniciteit_rapport
+
+# Pad naar de bestanden en sheet namen
+bestand1_pad = 'pad/naar/Cijfers_jaar_1_overgang_anoniem.xlsx'
+sheet_naam1 = 'Blad1'
+
+bestand2_pad = 'pad/naar/Anoniem_aanwezigheidsdata.xlsx'
+sheet_naam2 = 'Blad1'
+
+# Analyseer de datasets
+volledigheid_speciale_rapport1, uniciteit_rapport1 = analyseer_dataset(bestand1_pad, sheet_naam1)
+volledigheid_speciale_rapport2, uniciteit_rapport2 = analyseer_dataset(bestand2_pad, sheet_naam2)
+
+# Print de rapporten
+print("Volledigheids- en Speciale Tekens Rapport voor Dataset 1:")
+print(volledigheid_speciale_rapport1)
+print("\nUniciteitsrapport voor Dataset 1:")
+print(uniciteit_rapport1)
+
+print("\nVolledigheids- en Speciale Tekens Rapport voor Dataset 2:")
+print(volledigheid_speciale_rapport2)
+print("\nUniciteitsrapport voor Dataset 2:")
+print(uniciteit_rapport2)
